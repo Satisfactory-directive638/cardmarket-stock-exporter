@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: system-ui, sans-serif; width: 560px; padding: 12px; background:#1a1a1a; color:#eee; margin:0; min-height: 700px; }
+  body.detached { width: auto; min-width: 560px; max-width: none; resize: both; overflow: auto; }
+  h3 { margin: 0 0 6px; font-size: 15px; }
+  .hint { font-size: 11px; color:#aaa; margin-bottom: 10px; line-height: 1.4; }
+  button { width: 100%; padding: 9px; font-size: 13px; background:#2563eb; color:#fff; border:0; border-radius:4px; cursor:pointer; margin-bottom:6px; }
+  button.secondary { background:#444; }
+  button:disabled { background:#555; cursor:wait; }
+  #status { margin-top: 10px; font-size: 11px; max-height: 320px; overflow-y:auto; background:#0f0f0f; padding:6px; border-radius:3px; font-family: monospace; }
+  body.detached #status { max-height: 60vh; }
+  .err { color:#f87171; }
+  .ok { color:#6ee7b7; }
+  label { font-size: 11px; display:block; margin-bottom:4px; margin-top:4px; }
+  input[type=number], select { width: 100%; padding:5px; background:#0f0f0f; color:#eee; border:1px solid #444; border-radius:3px; box-sizing:border-box; }
+  .row2 { display:flex; gap:8px; }
+  .row2 > div { flex:1; }
+  .row2 label { margin-top:0; }
+  .opts { display:flex; align-items:center; gap:6px; margin: 6px 0; font-size:11px; }
+  .donation { margin-top: 12px; text-align:center; font-size:11px; color:#aaa; border-top: 1px solid #333; padding-top:10px; }
+  .donation a { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; background:#ffc439; color:#003087; text-decoration:none; border-radius:4px; font-weight:600; font-size:11px; }
+  .donation a:hover { background:#ffb200; }
+  .brand { display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid #222; font-size:10px; color:#555; }
+  .brand .logo { font-family: 'Segoe UI', system-ui, sans-serif; font-weight: 800; letter-spacing: 2px; font-size: 11px; background: linear-gradient(90deg, #2563eb, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .brand a { color: #555; text-decoration: none; }
+  .brand a:hover { color: #a855f7; }
+  .tabs { display:flex; gap:4px; margin-bottom:10px; border-bottom:1px solid #333; }
+  .tab { flex:1; padding:8px; background:transparent; color:#888; border:0; border-bottom:2px solid transparent; cursor:pointer; font-size:12px; border-radius:0; margin:0; }
+  .tab.active { color:#fff; border-bottom-color:#2563eb; background:transparent; }
+  .section { display:none; }
+  .section.active { display:block; }
+  .diffTable { width:100%; font-size:10px; max-height:280px; overflow-y:auto; background:#0f0f0f; padding:6px; border-radius:3px; font-family:monospace; margin-top:6px; }
+  body.detached .diffTable { max-height: 50vh; }
+  body.detached #setFilterList { max-height: 50vh; }
+  body.detached #updateLog { max-height: 40vh !important; }
+  body.detached #wantsLog { max-height: 40vh !important; }
+  .diffTable table { width:100%; border-collapse:collapse; }
+  .diffTable td { padding:2px 4px; border-bottom:1px solid #222; }
+  .diffUp { color:#6ee7b7; }
+  .diffDown { color:#f87171; }
+  .diffSame { color:#555; }
+  .warn { background:#7f1d1d; color:#fecaca; padding:8px; border-radius:3px; font-size:11px; margin:8px 0; }
+  #fileCsv { padding:8px; background:#0f0f0f; color:#eee; border:1px dashed #444; border-radius:3px; width:100%; box-sizing:border-box; font-size:11px; }
+</style>
+</head>
+<body>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+  <h3 style="margin:0">Cardmarket Stock → CSV</h3>
+  <button id="detach" title="Im eigenen Fenster öffnen (schließt sich nicht versehentlich)" style="width:auto;padding:4px 8px;font-size:11px;background:#2563eb;margin:0">📌 Pin</button>
+</div>
+<div class="hint">
+Öffne zuerst eine <b>Stock/Offers</b>-Seite. Klick <b>📌 Pin</b> damit Popup nicht wegfliegt.
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-section="exportSection">📥 Export</button>
+  <button class="tab" data-section="updateSection">✏️ Bulk Update</button>
+  <button class="tab" data-section="wantsSection">📋 Wants</button>
+</div>
+
+<div id="exportSection" class="section active">
+
+<div>
+  <label>Spiel</label>
+  <select id="game">
+    <option value="Pokemon">Pokémon</option>
+    <option value="Magic">Magic</option>
+    <option value="YuGiOh">YuGiOh</option>
+    <option value="FleshAndBlood">FaB</option>
+    <option value="Lorcana">Lorcana</option>
+    <option value="OnePiece">One Piece</option>
+    <option value="DragonBallSuper">DBS</option>
+    <option value="DigimonCardGame">Digimon</option>
+  </select>
+</div>
+
+<div style="margin-top:8px">
+  <label>Karten-Sprachen filtern <span style="color:#888;font-size:10px">(leer = alle Sprachen)</span></label>
+  <div id="cardLangFilter" style="background:#0f0f0f;border:1px solid #444;border-radius:3px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:10px">
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="3"> Deutsch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="1"> Englisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="2"> Französisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="4"> Spanisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="5"> Italienisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="8"> Portugiesisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="7"> Japanisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="10"> Koreanisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="6"> S-Chinesisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="11"> T-Chinesisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="9"> Russisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="13"> Indonesisch</label>
+  </div>
+  <div style="margin-top:4px;display:flex;gap:6px;font-size:10px">
+    <a href="#" id="langSelectAll" style="color:#2563eb">Alle</a>
+    <a href="#" id="langSelectNone" style="color:#888">Keine</a>
+    <a href="#" id="langSelectAsian" style="color:#a855f7">Nur Asiatische</a>
+  </div>
+</div>
+
+<div class="row2">
+  <div>
+    <label>Max. Seiten (0 = alle)</label>
+    <input id="maxPages" type="number" value="0" min="0">
+  </div>
+  <div>
+    <label>Delay (ms)</label>
+    <input id="delay" type="number" value="500" min="0">
+  </div>
+</div>
+
+<div class="opts">
+  <input type="checkbox" id="useSortBy" checked>
+  <label for="useSortBy" style="margin:0">sortBy=name_asc</label>
+</div>
+<div class="opts">
+  <input type="checkbox" id="perExpansion" checked>
+  <label for="perExpansion" style="margin:0">Pro Erweiterung iterieren (nötig für >300)</label>
+</div>
+
+<button id="run">Vollständigen Export starten</button>
+<button id="abort" class="secondary" style="background:#dc2626;display:none">Abbrechen</button>
+
+<div id="progress" style="display:none;margin-top:8px;padding:8px;background:#0f0f0f;border-radius:3px;font-size:11px;font-family:monospace;border:1px solid #2563eb">
+  <div id="progBar" style="height:4px;background:#222;border-radius:2px;overflow:hidden;margin-bottom:6px">
+    <div id="progFill" style="height:100%;width:0%;background:#2563eb;transition:width .3s"></div>
+  </div>
+  <div id="progText">…</div>
+</div>
+
+<div id="status"></div>
+<div id="keepOpenHint" class="hint" style="margin-top:6px;font-size:10px;color:#888">⚠ Popup offen lassen während Export — oder <b>📌 Pin</b> klicken</div>
+
+</div><!-- /exportSection -->
+
+<div id="updateSection" class="section">
+  <div class="hint">
+    CSV bearbeiten + hochladen → Preview zeigt Diff → Update.<br>
+    <b>Bulk-editierbar:</b> <code>Price_EUR</code> (immer), <code>Comments</code> (wenn Toggle "Comments mit-updaten" an).<br>
+    <b>NICHT bearbeiten:</b> <code>_OriginalPrice_EUR</code> + <code>_OriginalComments</code> (Read-Only Ref-Spalten für Skip-Fetch).<br>
+    Andere Spalten werden ignoriert.
+  </div>
+
+
+  <label>CSV-Datei wählen</label>
+  <input type="file" id="fileCsv" accept=".csv,text/csv">
+
+  <div class="row2" style="margin-top:8px">
+    <div>
+      <label>Max Preis-Änderung (%)</label>
+      <input id="maxChangePct" type="number" value="200" min="10" max="10000">
+    </div>
+    <div>
+      <label>Delay pro Update (ms)</label>
+      <input id="updateDelay" type="number" value="250" min="100">
+    </div>
+  </div>
+
+  <div class="opts">
+    <input type="checkbox" id="dryRun" checked>
+    <label for="dryRun" style="margin:0"><b>Dry-Run</b> (nichts wird gespeichert — nur testen)</label>
+  </div>
+  <div class="opts">
+    <input type="checkbox" id="verifyAfter">
+    <label for="verifyAfter" style="margin:0">Verify nach Update (langsamer aber sicher)</label>
+  </div>
+  <div class="opts">
+    <input type="checkbox" id="updateComments">
+    <label for="updateComments" style="margin:0">Comments mit-updaten (leere CSV-Zelle = Comment auf CM löschen)</label>
+  </div>
+  <div class="opts">
+    <input type="checkbox" id="fastMode">
+    <label for="fastMode" style="margin:0">⚡ <b>Fast Mode</b> (Direct AJAX, kein Modal-Render, ~10× schneller, CF-friendly)</label>
+  </div>
+  <div class="opts">
+    <input type="checkbox" id="slowMode">
+    <label for="slowMode" style="margin:0">🐢 <b>Slow Mode</b> (Cloudflare-safe, 1 Req/2s, für >500 Karten empfohlen)</label>
+  </div>
+
+  <div id="updatePreview"></div>
+
+  <!-- v2.1: Set-Filter zwischen Analyze und Update -->
+  <div id="setFilterContainer" style="display:none;margin-top:8px;padding:6px;background:#0f0f0f;border:1px solid #444;border-radius:3px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:11px">
+      <span><b>Sets auswählen:</b> nur ausgewählte werden updated</span>
+      <span style="font-size:10px">
+        <a href="#" id="setFilterAll" style="color:#2563eb">Alle</a> ·
+        <a href="#" id="setFilterNone" style="color:#888">Keine</a>
+      </span>
+    </div>
+    <div id="setFilterList" style="max-height:300px;overflow-y:auto;font-size:11px"></div>
+  </div>
+
+  <button id="btnAnalyze" class="secondary">CSV analysieren + Preview</button>
+  <button id="btnUpdate" style="display:none;background:#dc2626">Bestätige Update: <span id="updateCount">0</span> Artikel</button>
+  <button id="btnAbortUpdate" class="secondary" style="background:#dc2626;display:none">Abbrechen</button>
+
+  <div id="updateProgress" style="display:none;margin-top:8px;padding:8px;background:#0f0f0f;border-radius:3px;font-size:11px;font-family:monospace;border:1px solid #dc2626">
+    <div style="height:4px;background:#222;border-radius:2px;overflow:hidden;margin-bottom:6px">
+      <div id="updateProgFill" style="height:100%;width:0%;background:#dc2626;transition:width .3s"></div>
+    </div>
+    <div id="updateProgText">…</div>
+  </div>
+
+  <div id="updateLog" style="margin-top:10px;font-size:10px;max-height:200px;overflow-y:auto;background:#0f0f0f;padding:6px;border-radius:3px;font-family:monospace"></div>
+</div><!-- /updateSection -->
+
+<div id="wantsSection" class="section">
+  <div class="hint">
+    Exportiert alle deine Wantlists als CSV. Eine kombinierte Datei mit <code>WantListName</code>-Spalte.<br>
+    Optional: bearbeite CSV in Excel + lade hier hoch um Einträge zu löschen (Spalte <code>delete=Y</code>).
+  </div>
+
+  <button id="btnWantsExport">📥 Alle Wantlists exportieren</button>
+  <button id="btnAbortWants" class="secondary" style="background:#dc2626;display:none">Abbrechen</button>
+
+  <div id="wantsProgress" style="display:none;margin-top:8px;padding:8px;background:#0f0f0f;border-radius:3px;font-size:11px;font-family:monospace;border:1px solid #2563eb">
+    <div style="height:4px;background:#222;border-radius:2px;overflow:hidden;margin-bottom:6px">
+      <div id="wantsProgFill" style="height:100%;width:0%;background:#2563eb;transition:width .3s"></div>
+    </div>
+    <div id="wantsProgText">…</div>
+  </div>
+
+  <div style="border-top:1px solid #333;margin:14px 0 10px"></div>
+
+  <div class="hint">
+    <b>Bulk-Delete + Bulk-Edit:</b> CSV bearbeiten + hochladen.<br>
+    <b>Editierbar:</b> <code>Language</code>, <code>MinCondition</code>, <code>IsFoil</code>, <code>IsSigned</code>, <code>IsAltered</code>, <code>IsPlayset</code>, <code>IsReverseHolo</code>, <code>MaxPrice_EUR</code>, <code>Quantity</code>, <code>delete</code>.<br>
+    <b>NICHT bearbeiten:</b> alle <code>_Original*</code>-Spalten (Read-Only Refs für Skip-Fetch).<br>
+    <code>delete=Y</code> → Eintrag wird gelöscht. Geänderte Felder → Eintrag wird editiert. Default: Dry-Run an.
+  </div>
+
+  <label>Wants-CSV wählen (für Bulk-Delete + Bulk-Edit)</label>
+  <input type="file" id="fileWantsCsv" accept=".csv,text/csv">
+
+  <div class="opts" style="margin-top:8px">
+    <input type="checkbox" id="wantsDryRun" checked>
+    <label for="wantsDryRun" style="margin:0"><b>Dry-Run</b> (nichts wird gelöscht — nur testen)</label>
+  </div>
+
+  <button id="btnWantsAnalyze" class="secondary" style="margin-top:6px">CSV analysieren + Preview</button>
+  <button id="btnWantsDelete" style="display:none;background:#dc2626">Bestätige: <span id="wantsDeleteCount">0</span></button>
+
+  <div id="wantsLog" style="margin-top:10px;font-size:10px;max-height:200px;overflow-y:auto;background:#0f0f0f;padding:6px;border-radius:3px;font-family:monospace"></div>
+</div><!-- /wantsSection -->
+
+<div class="donation">
+  Gefällt dir das Tool? Spende gerne:<br>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=X8MG6CZK2PETS" target="_blank" rel="noopener">
+    ♥ PayPal Donate
+  </a>
+</div>
+
+<div style="margin-top:10px;padding:6px 8px;background:#0f0f0f;border-radius:3px;font-size:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+  <span style="color:#888">CM-UI Locale: <span id="localeAutoNote" style="color:#6ee7b7">auto</span></span>
+  <select id="lang" style="width:auto;padding:2px 4px;font-size:10px">
+    <option value="de">/de/</option>
+    <option value="en">/en/</option>
+    <option value="fr">/fr/</option>
+    <option value="es">/es/</option>
+    <option value="it">/it/</option>
+  </select>
+</div>
+
+<div class="brand">
+  <span>made with ♥ by</span>
+  <a href="https://github.com/LUPZN" target="_blank" rel="noopener"><span class="logo">LUPZN</span></a>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
