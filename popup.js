@@ -13,6 +13,24 @@ const progFillEl = document.getElementById('progFill');
 const progTextEl = document.getElementById('progText');
 const keepOpenHintEl = document.getElementById('keepOpenHint');
 
+// v2.2: i18n shorthand
+const t = (key, vars) => (window.i18n ? window.i18n.getMsg(key, vars || []) : key);
+
+// v2.2: i18n init — load locale, populate uiLang dropdown, apply translations
+(async () => {
+  if (!window.i18n) return;
+  await window.i18n.loadLocale();
+  window.i18n.applyI18n();
+  const uiLangEl = document.getElementById('uiLang');
+  if (uiLangEl) {
+    const { uiLocale } = await chrome.storage.local.get('uiLocale');
+    uiLangEl.value = uiLocale || 'auto';
+    uiLangEl.addEventListener('change', async () => {
+      await window.i18n.setLocale(uiLangEl.value);
+    });
+  }
+})();
+
 // Detect detached mode + target tab from URL params
 const urlParams = new URLSearchParams(location.search);
 const isDetached = urlParams.get('detached') === '1';
@@ -49,7 +67,7 @@ if (isDetached) {
       });
       window.close();
     } catch (e) {
-      log('Pin-Fehler: ' + e.message, 'err');
+      log(t('log_pin_error', [e.message]), 'err');
     }
   });
 }
@@ -61,8 +79,8 @@ abortBtn.addEventListener('click', async () => {
       target: { tabId: tab.id },
       func: () => { window.__cmExportStop = true; },
     });
-    log('Abbruch angefordert...', 'err');
-  } catch (e) { log('Abort-Fehler: ' + e.message, 'err'); }
+    log(t('log_abort_requested'), 'err');
+  } catch (e) { log(t('log_abort_error', [e.message]), 'err'); }
 });
 
 const log = (msg, cls = '') => {
@@ -79,7 +97,7 @@ const localeAutoNote = document.getElementById('localeAutoNote');
 let userOverrodeLocale = false;
 langEl.addEventListener('change', () => {
   userOverrodeLocale = true;
-  if (localeAutoNote) { localeAutoNote.textContent = 'manuell'; localeAutoNote.style.color = '#fbbf24'; }
+  if (localeAutoNote) { localeAutoNote.textContent = t('locale_manual'); localeAutoNote.style.color = '#fbbf24'; }
 });
 (async () => {
   try {
@@ -88,7 +106,7 @@ langEl.addEventListener('change', () => {
     if (m) {
       if ([...langEl.options].some(o => o.value === m[1]) && !userOverrodeLocale) {
         langEl.value = m[1];
-        if (localeAutoNote) { localeAutoNote.textContent = `auto (${m[1]})`; localeAutoNote.style.color = '#6ee7b7'; }
+        if (localeAutoNote) { localeAutoNote.textContent = `${t('locale_auto')} (${m[1]})`; localeAutoNote.style.color = '#6ee7b7'; }
       }
       if ([...gameEl.options].some(o => o.value === m[2])) gameEl.value = m[2];
     }
@@ -131,14 +149,14 @@ async function runExport(maxPages) {
   btnRun.disabled = true;
   abortBtn.style.display = 'block';
   progressEl.style.display = 'block';
-  progTextEl.textContent = 'Starte...';
+  progTextEl.textContent = t('progress_starting');
   progFillEl.style.width = '0%';
   statusEl.innerHTML = '';
   let pollTimer = null;
   try {
     const tab = await getTargetTab();
     if (!tab || !/cardmarket\.com/.test(tab.url || '')) {
-      log('Kein Cardmarket-Tab gefunden. Öffne eine Stock-Seite zuerst.', 'err');
+      log(t('log_no_cm_tab'), 'err');
       return;
     }
     const delay = parseInt(delayEl.value, 10) || 0;
@@ -147,8 +165,8 @@ async function runExport(maxPages) {
     const perExpansion = perExpansionEl.checked && maxPages !== 1;
     // v2.1: Karten-Sprachen-Filter (multi-select)
     const cardLangIds = getSelectedCardLangIds();
-    const langFilterMsg = cardLangIds.length > 0 ? ` | Sprachen: ${cardLangIds.join(',')}` : '';
-    log(`Path: ${basePath} | sortBy=${useSortBy} | perExpansion=${perExpansion} | delay=${delay}ms${langFilterMsg}`);
+    const langFilterMsg = cardLangIds.length > 0 ? t('log_card_langs', [cardLangIds.join(',')]) : '';
+    log(t('log_path_info', [basePath, useSortBy, perExpansion, delay, langFilterMsg]));
 
     // Reset progress + stop flag in tab context first
     await chrome.scripting.executeScript({
@@ -164,10 +182,11 @@ async function runExport(maxPages) {
           func: () => window.__cmExportProgress || null,
         });
         if (!p) return;
-        const expTxt = p.expansion ? `Erw ${p.expansion.idx}/${p.expansion.total} ${p.expansion.name || ''}` : 'ALL';
+        const expTxt = p.expansion ? t('progress_expansion', [p.expansion.idx, p.expansion.total, p.expansion.name || '']) : t('progress_all');
         const pct = p.expansion?.total ? Math.round(((p.expansion.idx - 1) / p.expansion.total) * 100) : 0;
         progFillEl.style.width = pct + '%';
-        progTextEl.textContent = `${expTxt} | Seite ${p.page} | Zeilen ${p.rowsTotal} | Stock ${p.stockTotal || 0}${p.lastErr ? ' ⚠ ' + p.lastErr : ''}`;
+        const errSuffix = p.lastErr ? ' ⚠ ' + p.lastErr : '';
+        progTextEl.textContent = t('progress_scrape_status', [expTxt, p.page, p.rowsTotal, p.stockTotal || 0, errSuffix]);
       } catch (e) { /* tab gone or busy, ignore */ }
     }, 800);
 
@@ -181,30 +200,30 @@ async function runExport(maxPages) {
     progFillEl.style.width = '100%';
 
     if (result.error) {
-      log('Fehler: ' + result.error, 'err');
+      log(t('log_error', [result.error]), 'err');
       if (result.debugSnippet) log(result.debugSnippet.slice(0, 500));
       return;
     }
-    log(`Seiten gescannt: ${result.pagesScanned}`, 'ok');
-    if (result.detectedTotalPages) log(`Pagination-Widget: ${result.detectedTotalPages} Seiten`);
-    log(`Zeilen (dedup): ${result.rows.length}`, 'ok');
+    log(t('log_pages_scanned', [result.pagesScanned]), 'ok');
+    if (result.detectedTotalPages) log(t('log_pagination_widget', [result.detectedTotalPages]));
+    log(t('log_rows_dedup', [result.rows.length]), 'ok');
     const emptyAmount = result.rows.filter(r => !(r.amountDisplay || r.amount)).length;
-    if (emptyAmount > 0) log(`⚠ Zeilen ohne Amount: ${emptyAmount}`, 'err');
+    if (emptyAmount > 0) log(t('log_rows_no_amount', [emptyAmount]), 'err');
     // v2.1: idProduct-Coverage-Summary für späteren Auto-Rebind
     const emptyIdProduct = result.rows.filter(r => !r.idProduct).length;
     if (emptyIdProduct > 0) {
       const pct = (emptyIdProduct / result.rows.length * 100).toFixed(1);
-      log(`⚠ Zeilen ohne idProduct: ${emptyIdProduct} (${pct}%) — meist Karten ohne CM-Bild (neue Sets, Special-Promos). Auto-Rebind nur für rows MIT idProduct möglich.`, 'err');
+      log(t('log_rows_no_idproduct', [emptyIdProduct, pct]), 'err');
     } else {
-      log(`✓ idProduct extrahiert für alle ${result.rows.length} Zeilen`, 'ok');
+      log(t('log_idproduct_ok', [result.rows.length]), 'ok');
     }
     const totalStock = result.rows.reduce((s, r) => s + (parseInt(r.amountDisplay || r.amount, 10) || 0), 0);
-    log(`Summe Amounts: ${totalStock}`, 'ok');
+    log(t('log_total_amounts', [totalStock]), 'ok');
     const totalValue = result.rows.reduce((s, r) => s + (parseFloat((r.price || '').replace(/\./g, '').replace(',', '.')) || 0) * (parseInt(r.amountDisplay || r.amount, 10) || 0), 0);
-    log(`Gesamtwert: ${totalValue.toFixed(2).replace('.', ',')} €`, 'ok');
+    log(t('log_total_value', [totalValue.toFixed(2).replace('.', ',')]), 'ok');
 
     if (result.rows.length === 0) {
-      log('Keine Zeilen. Prüfe Login + Pfad.', 'err');
+      log(t('log_no_rows'), 'err');
       if (result.debugSnippet) log(result.debugSnippet.slice(0, 800));
       return;
     }
@@ -225,15 +244,15 @@ async function runExport(maxPages) {
       const fname = `cardmarket-stock-${new Date().toISOString().slice(0, 10)}-${meta.lang}-${meta.game}-v${meta.toolVersion}.csv`;
       try {
         await chrome.downloads.download({ url: reader.result, filename: fname, saveAs: true });
-        log('Download: ' + fname, 'ok');
+        log(t('log_download', [fname]), 'ok');
       } catch (e) {
-        log('Download-Fehler: ' + e.message, 'err');
+        log(t('log_download_error', [e.message]), 'err');
       }
     };
     reader.readAsDataURL(blob);
 
   } catch (e) {
-    log('Exception: ' + e.message, 'err');
+    log(t('log_exception', [e.message]), 'err');
     console.error(e);
   } finally {
     if (pollTimer) clearInterval(pollTimer);
@@ -1493,6 +1512,7 @@ btnAnalyze.addEventListener('click', async () => {
     }
   }
   updateCountEl.textContent = okUpdates.length;
+  btnUpdate.textContent = t('btn_confirm_update', [okUpdates.length]);
   if (okUpdates.length > 0) {
     btnUpdate.style.display = 'block';
   } else {
@@ -1541,6 +1561,7 @@ function updateBulkCountFromSetFilter() {
   if (!selectedSets) return;
   const filtered = parsedUpdates.filter(u => selectedSets.has(u._expansion || '(unbekannt)'));
   updateCountEl.textContent = filtered.length;
+  btnUpdate.textContent = t('btn_confirm_update', [filtered.length]);
   btnUpdate.style.display = filtered.length > 0 ? 'block' : 'none';
 }
 document.getElementById('setFilterAll')?.addEventListener('click', (e) => {
@@ -2736,7 +2757,7 @@ btnWantsAnalyze.addEventListener('click', async () => {
 
   parsedDeletes = toDelete;
   parsedWantsEdits = toEdit;
-  wantsDeleteCountEl.textContent = `${toDelete.length} löschen + ${toEdit.length} edit`;
+  btnWantsDelete.textContent = t('btn_wants_confirm', [`${toDelete.length} ${toDelete.length === 1 ? 'delete' : 'delete'} + ${toEdit.length} edit`]);
   btnWantsDelete.style.display = 'block';
 });
 

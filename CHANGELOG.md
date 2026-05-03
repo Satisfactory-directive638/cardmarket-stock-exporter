@@ -6,6 +6,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), version
 
 ---
 
+## [2.2.0] — 2026-05-03
+
+i18n release — UI now supports German + English with auto-detection from browser locale plus manual override toggle.
+
+### Added
+
+- **`_locales/de/messages.json` + `_locales/en/messages.json`** — Chrome standard i18n dictionaries with ~100 keys covering UI labels, buttons, hints, banners, progress text, and key log/error messages.
+- **i18n.js** helper module — hybrid approach combining `chrome.i18n.getMessage()` (browser-locale-based) with `chrome.storage.local` override for in-popup language toggle.
+- **🌐 UI Language toggle** in popup header — Auto / 🇩🇪 DE / 🇬🇧 EN. Override persists across sessions via `chrome.storage.local`.
+- **`storage` permission** added to manifest for persisting the user's preferred UI language.
+
+### Changed
+
+- `manifest.json` — `name`, `description`, `default_title` now use `__MSG_*__` placeholders. `default_locale: "de"` set as fallback.
+- `popup.html` — all visible UI strings (labels, buttons, hints, options) now carry `data-i18n*` attributes for runtime translation.
+- `popup.js` — wired i18n init at startup, replaced key user-visible strings with `t()` helper calls (progress text, error logs, status banners, button labels).
+
+### Compatibility
+
+- Existing v2.1 installs auto-update without data loss. Stored UI language preference: defaults to "auto" (browser locale).
+- Existing CSV exports remain compatible — CSV column structure unchanged.
+- Some verbose internal log messages remain in German for v2.2 and will be fully translated in v2.3.
+
+---
+
 ## [2.1.0] — 2026-04-29
 
 Major release driven by community feedback from Reddit (r/Cardmarket) and direct user reports. Focus: hardening Bulk-Update against real-world edge cases + Want-Lists support + speed.

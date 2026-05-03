@@ -43,28 +43,39 @@
   .diffDown { color:#f87171; }
   .diffSame { color:#555; }
   .warn { background:#7f1d1d; color:#fecaca; padding:8px; border-radius:3px; font-size:11px; margin:8px 0; }
-  #fileCsv { padding:8px; background:#0f0f0f; color:#eee; border:1px dashed #444; border-radius:3px; width:100%; box-sizing:border-box; font-size:11px; }
+  #fileCsv, #fileWantsCsv { padding:8px; background:#0f0f0f; color:#eee; border:1px dashed #444; border-radius:3px; width:100%; box-sizing:border-box; font-size:11px; }
+  .ui-lang-toggle { display:flex; align-items:center; gap:4px; font-size:10px; }
+  .ui-lang-toggle select { padding:2px 4px; font-size:10px; width:auto; }
 </style>
 </head>
 <body>
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-  <h3 style="margin:0">Cardmarket Stock → CSV</h3>
-  <button id="detach" title="Im eigenen Fenster öffnen (schließt sich nicht versehentlich)" style="width:auto;padding:4px 8px;font-size:11px;background:#2563eb;margin:0">📌 Pin</button>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px">
+  <h3 style="margin:0" data-i18n="header_title">Cardmarket Stock → CSV</h3>
+  <div style="display:flex;gap:6px;align-items:center">
+    <div class="ui-lang-toggle">
+      <select id="uiLang" title="UI Language">
+        <option value="auto">🌐 Auto</option>
+        <option value="de">🇩🇪 DE</option>
+        <option value="en">🇬🇧 EN</option>
+      </select>
+    </div>
+    <button id="detach" data-i18n-title="tooltip_pin" title="Im eigenen Fenster öffnen (schließt sich nicht versehentlich)" style="width:auto;padding:4px 8px;font-size:11px;background:#2563eb;margin:0"><span data-i18n="btn_pin">📌 Pin</span></button>
+  </div>
 </div>
-<div class="hint">
+<div class="hint" data-i18n-html="hint_main">
 Öffne zuerst eine <b>Stock/Offers</b>-Seite. Klick <b>📌 Pin</b> damit Popup nicht wegfliegt.
 </div>
 
 <div class="tabs">
-  <button class="tab active" data-section="exportSection">📥 Export</button>
-  <button class="tab" data-section="updateSection">✏️ Bulk Update</button>
-  <button class="tab" data-section="wantsSection">📋 Wants</button>
+  <button class="tab active" data-section="exportSection" data-i18n="tab_export">📥 Export</button>
+  <button class="tab" data-section="updateSection" data-i18n="tab_update">✏️ Bulk Update</button>
+  <button class="tab" data-section="wantsSection" data-i18n="tab_wants">📋 Wants</button>
 </div>
 
 <div id="exportSection" class="section active">
 
 <div>
-  <label>Spiel</label>
+  <label data-i18n="label_game">Spiel</label>
   <select id="game">
     <option value="Pokemon">Pokémon</option>
     <option value="Magic">Magic</option>
@@ -78,50 +89,50 @@
 </div>
 
 <div style="margin-top:8px">
-  <label>Karten-Sprachen filtern <span style="color:#888;font-size:10px">(leer = alle Sprachen)</span></label>
+  <label><span data-i18n="label_card_lang_filter">Karten-Sprachen filtern</span> <span style="color:#888;font-size:10px" data-i18n="label_card_lang_filter_hint">(leer = alle Sprachen)</span></label>
   <div id="cardLangFilter" style="background:#0f0f0f;border:1px solid #444;border-radius:3px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:10px">
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="3"> Deutsch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="1"> Englisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="2"> Französisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="4"> Spanisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="5"> Italienisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="8"> Portugiesisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="7"> Japanisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="10"> Koreanisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="6"> S-Chinesisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="11"> T-Chinesisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="9"> Russisch</label>
-    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="13"> Indonesisch</label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="3"> <span data-i18n="lang_de">Deutsch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="1"> <span data-i18n="lang_en">Englisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="2"> <span data-i18n="lang_fr">Französisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="4"> <span data-i18n="lang_es">Spanisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="5"> <span data-i18n="lang_it">Italienisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="8"> <span data-i18n="lang_pt">Portugiesisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="7"> <span data-i18n="lang_jp">Japanisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="10"> <span data-i18n="lang_kr">Koreanisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="6"> <span data-i18n="lang_scn">S-Chinesisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="11"> <span data-i18n="lang_tcn">T-Chinesisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="9"> <span data-i18n="lang_ru">Russisch</span></label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px"><input type="checkbox" data-lang-id="13"> <span data-i18n="lang_id">Indonesisch</span></label>
   </div>
   <div style="margin-top:4px;display:flex;gap:6px;font-size:10px">
-    <a href="#" id="langSelectAll" style="color:#2563eb">Alle</a>
-    <a href="#" id="langSelectNone" style="color:#888">Keine</a>
-    <a href="#" id="langSelectAsian" style="color:#a855f7">Nur Asiatische</a>
+    <a href="#" id="langSelectAll" style="color:#2563eb" data-i18n="lang_select_all">Alle</a>
+    <a href="#" id="langSelectNone" style="color:#888" data-i18n="lang_select_none">Keine</a>
+    <a href="#" id="langSelectAsian" style="color:#a855f7" data-i18n="lang_select_asian">Nur Asiatische</a>
   </div>
 </div>
 
 <div class="row2">
   <div>
-    <label>Max. Seiten (0 = alle)</label>
+    <label data-i18n="label_max_pages">Max. Seiten (0 = alle)</label>
     <input id="maxPages" type="number" value="0" min="0">
   </div>
   <div>
-    <label>Delay (ms)</label>
+    <label data-i18n="label_delay_ms">Delay (ms)</label>
     <input id="delay" type="number" value="500" min="0">
   </div>
 </div>
 
 <div class="opts">
   <input type="checkbox" id="useSortBy" checked>
-  <label for="useSortBy" style="margin:0">sortBy=name_asc</label>
+  <label for="useSortBy" style="margin:0" data-i18n="opt_sortby">sortBy=name_asc</label>
 </div>
 <div class="opts">
   <input type="checkbox" id="perExpansion" checked>
-  <label for="perExpansion" style="margin:0">Pro Erweiterung iterieren (nötig für >300)</label>
+  <label for="perExpansion" style="margin:0" data-i18n="opt_per_expansion">Pro Erweiterung iterieren (nötig für >300)</label>
 </div>
 
-<button id="run">Vollständigen Export starten</button>
-<button id="abort" class="secondary" style="background:#dc2626;display:none">Abbrechen</button>
+<button id="run" data-i18n="btn_run_export">Vollständigen Export starten</button>
+<button id="abort" class="secondary" style="background:#dc2626;display:none" data-i18n="btn_abort">Abbrechen</button>
 
 <div id="progress" style="display:none;margin-top:8px;padding:8px;background:#0f0f0f;border-radius:3px;font-size:11px;font-family:monospace;border:1px solid #2563eb">
   <div id="progBar" style="height:4px;background:#222;border-radius:2px;overflow:hidden;margin-bottom:6px">
@@ -131,12 +142,12 @@
 </div>
 
 <div id="status"></div>
-<div id="keepOpenHint" class="hint" style="margin-top:6px;font-size:10px;color:#888">⚠ Popup offen lassen während Export — oder <b>📌 Pin</b> klicken</div>
+<div id="keepOpenHint" class="hint" style="margin-top:6px;font-size:10px;color:#888" data-i18n-html="hint_keep_open">⚠ Popup offen lassen während Export — oder <b>📌 Pin</b> klicken</div>
 
 </div><!-- /exportSection -->
 
 <div id="updateSection" class="section">
-  <div class="hint">
+  <div class="hint" data-i18n-html="update_hint">
     CSV bearbeiten + hochladen → Preview zeigt Diff → Update.<br>
     <b>Bulk-editierbar:</b> <code>Price_EUR</code> (immer), <code>Comments</code> (wenn Toggle "Comments mit-updaten" an).<br>
     <b>NICHT bearbeiten:</b> <code>_OriginalPrice_EUR</code> + <code>_OriginalComments</code> (Read-Only Ref-Spalten für Skip-Fetch).<br>
@@ -144,39 +155,39 @@
   </div>
 
 
-  <label>CSV-Datei wählen</label>
+  <label data-i18n="label_csv_select">CSV-Datei wählen</label>
   <input type="file" id="fileCsv" accept=".csv,text/csv">
 
   <div class="row2" style="margin-top:8px">
     <div>
-      <label>Max Preis-Änderung (%)</label>
+      <label data-i18n="label_max_change_pct">Max Preis-Änderung (%)</label>
       <input id="maxChangePct" type="number" value="200" min="10" max="10000">
     </div>
     <div>
-      <label>Delay pro Update (ms)</label>
+      <label data-i18n="label_update_delay">Delay pro Update (ms)</label>
       <input id="updateDelay" type="number" value="250" min="100">
     </div>
   </div>
 
   <div class="opts">
     <input type="checkbox" id="dryRun" checked>
-    <label for="dryRun" style="margin:0"><b>Dry-Run</b> (nichts wird gespeichert — nur testen)</label>
+    <label for="dryRun" style="margin:0" data-i18n-html="opt_dryrun"><b>Dry-Run</b> (nichts wird gespeichert — nur testen)</label>
   </div>
   <div class="opts">
     <input type="checkbox" id="verifyAfter">
-    <label for="verifyAfter" style="margin:0">Verify nach Update (langsamer aber sicher)</label>
+    <label for="verifyAfter" style="margin:0" data-i18n="opt_verify_after">Verify nach Update (langsamer aber sicher)</label>
   </div>
   <div class="opts">
     <input type="checkbox" id="updateComments">
-    <label for="updateComments" style="margin:0">Comments mit-updaten (leere CSV-Zelle = Comment auf CM löschen)</label>
+    <label for="updateComments" style="margin:0" data-i18n="opt_update_comments">Comments mit-updaten (leere CSV-Zelle = Comment auf CM löschen)</label>
   </div>
   <div class="opts">
     <input type="checkbox" id="fastMode">
-    <label for="fastMode" style="margin:0">⚡ <b>Fast Mode</b> (Direct AJAX, kein Modal-Render, ~10× schneller, CF-friendly)</label>
+    <label for="fastMode" style="margin:0" data-i18n-html="opt_fast_mode">⚡ <b>Fast Mode</b> (Direct AJAX, kein Modal-Render, ~10× schneller, CF-friendly)</label>
   </div>
   <div class="opts">
     <input type="checkbox" id="slowMode">
-    <label for="slowMode" style="margin:0">🐢 <b>Slow Mode</b> (Cloudflare-safe, 1 Req/2s, für >500 Karten empfohlen)</label>
+    <label for="slowMode" style="margin:0" data-i18n-html="opt_slow_mode">🐢 <b>Slow Mode</b> (Cloudflare-safe, 1 Req/2s, für >500 Karten empfohlen)</label>
   </div>
 
   <div id="updatePreview"></div>
@@ -184,18 +195,18 @@
   <!-- v2.1: Set-Filter zwischen Analyze und Update -->
   <div id="setFilterContainer" style="display:none;margin-top:8px;padding:6px;background:#0f0f0f;border:1px solid #444;border-radius:3px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:11px">
-      <span><b>Sets auswählen:</b> nur ausgewählte werden updated</span>
+      <span data-i18n-html="set_filter_label"><b>Sets auswählen:</b> nur ausgewählte werden updated</span>
       <span style="font-size:10px">
-        <a href="#" id="setFilterAll" style="color:#2563eb">Alle</a> ·
-        <a href="#" id="setFilterNone" style="color:#888">Keine</a>
+        <a href="#" id="setFilterAll" style="color:#2563eb" data-i18n="set_filter_all">Alle</a> ·
+        <a href="#" id="setFilterNone" style="color:#888" data-i18n="set_filter_none">Keine</a>
       </span>
     </div>
     <div id="setFilterList" style="max-height:300px;overflow-y:auto;font-size:11px"></div>
   </div>
 
-  <button id="btnAnalyze" class="secondary">CSV analysieren + Preview</button>
-  <button id="btnUpdate" style="display:none;background:#dc2626">Bestätige Update: <span id="updateCount">0</span> Artikel</button>
-  <button id="btnAbortUpdate" class="secondary" style="background:#dc2626;display:none">Abbrechen</button>
+  <button id="btnAnalyze" class="secondary" data-i18n="btn_analyze">CSV analysieren + Preview</button>
+  <button id="btnUpdate" style="display:none;background:#dc2626"><span id="btnUpdateLabel">Bestätige Update: <span id="updateCount">0</span> Artikel</span></button>
+  <button id="btnAbortUpdate" class="secondary" style="background:#dc2626;display:none" data-i18n="btn_abort">Abbrechen</button>
 
   <div id="updateProgress" style="display:none;margin-top:8px;padding:8px;background:#0f0f0f;border-radius:3px;font-size:11px;font-family:monospace;border:1px solid #dc2626">
     <div style="height:4px;background:#222;border-radius:2px;overflow:hidden;margin-bottom:6px">
@@ -208,13 +219,13 @@
 </div><!-- /updateSection -->
 
 <div id="wantsSection" class="section">
-  <div class="hint">
+  <div class="hint" data-i18n-html="wants_export_hint">
     Exportiert alle deine Wantlists als CSV. Eine kombinierte Datei mit <code>WantListName</code>-Spalte.<br>
     Optional: bearbeite CSV in Excel + lade hier hoch um Einträge zu löschen (Spalte <code>delete=Y</code>).
   </div>
 
-  <button id="btnWantsExport">📥 Alle Wantlists exportieren</button>
-  <button id="btnAbortWants" class="secondary" style="background:#dc2626;display:none">Abbrechen</button>
+  <button id="btnWantsExport" data-i18n="btn_wants_export">📥 Alle Wantlists exportieren</button>
+  <button id="btnAbortWants" class="secondary" style="background:#dc2626;display:none" data-i18n="btn_abort">Abbrechen</button>
 
   <div id="wantsProgress" style="display:none;margin-top:8px;padding:8px;background:#0f0f0f;border-radius:3px;font-size:11px;font-family:monospace;border:1px solid #2563eb">
     <div style="height:4px;background:#222;border-radius:2px;overflow:hidden;margin-bottom:6px">
@@ -225,36 +236,36 @@
 
   <div style="border-top:1px solid #333;margin:14px 0 10px"></div>
 
-  <div class="hint">
+  <div class="hint" data-i18n-html="wants_bulk_hint">
     <b>Bulk-Delete + Bulk-Edit:</b> CSV bearbeiten + hochladen.<br>
     <b>Editierbar:</b> <code>Language</code>, <code>MinCondition</code>, <code>IsFoil</code>, <code>IsSigned</code>, <code>IsAltered</code>, <code>IsPlayset</code>, <code>IsReverseHolo</code>, <code>MaxPrice_EUR</code>, <code>Quantity</code>, <code>delete</code>.<br>
     <b>NICHT bearbeiten:</b> alle <code>_Original*</code>-Spalten (Read-Only Refs für Skip-Fetch).<br>
     <code>delete=Y</code> → Eintrag wird gelöscht. Geänderte Felder → Eintrag wird editiert. Default: Dry-Run an.
   </div>
 
-  <label>Wants-CSV wählen (für Bulk-Delete + Bulk-Edit)</label>
+  <label data-i18n="label_wants_csv_select">Wants-CSV wählen (für Bulk-Delete + Bulk-Edit)</label>
   <input type="file" id="fileWantsCsv" accept=".csv,text/csv">
 
   <div class="opts" style="margin-top:8px">
     <input type="checkbox" id="wantsDryRun" checked>
-    <label for="wantsDryRun" style="margin:0"><b>Dry-Run</b> (nichts wird gelöscht — nur testen)</label>
+    <label for="wantsDryRun" style="margin:0" data-i18n-html="opt_wants_dryrun"><b>Dry-Run</b> (nichts wird gelöscht — nur testen)</label>
   </div>
 
-  <button id="btnWantsAnalyze" class="secondary" style="margin-top:6px">CSV analysieren + Preview</button>
-  <button id="btnWantsDelete" style="display:none;background:#dc2626">Bestätige: <span id="wantsDeleteCount">0</span></button>
+  <button id="btnWantsAnalyze" class="secondary" style="margin-top:6px" data-i18n="btn_wants_analyze">CSV analysieren + Preview</button>
+  <button id="btnWantsDelete" style="display:none;background:#dc2626"><span id="btnWantsDeleteLabel">Bestätige: <span id="wantsDeleteCount">0</span></span></button>
 
   <div id="wantsLog" style="margin-top:10px;font-size:10px;max-height:200px;overflow-y:auto;background:#0f0f0f;padding:6px;border-radius:3px;font-family:monospace"></div>
 </div><!-- /wantsSection -->
 
 <div class="donation">
-  Gefällt dir das Tool? Spende gerne:<br>
-  <a href="https://www.paypal.com/donate/?hosted_button_id=X8MG6CZK2PETS" target="_blank" rel="noopener">
+  <span data-i18n="donation_text">Gefällt dir das Tool? Spende gerne:</span><br>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=X8MG6CZK2PETS" target="_blank" rel="noopener" data-i18n="donation_button">
     ♥ PayPal Donate
   </a>
 </div>
 
 <div style="margin-top:10px;padding:6px 8px;background:#0f0f0f;border-radius:3px;font-size:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-  <span style="color:#888">CM-UI Locale: <span id="localeAutoNote" style="color:#6ee7b7">auto</span></span>
+  <span style="color:#888"><span data-i18n="locale_label">CM-UI Locale:</span> <span id="localeAutoNote" style="color:#6ee7b7" data-i18n="locale_auto">auto</span></span>
   <select id="lang" style="width:auto;padding:2px 4px;font-size:10px">
     <option value="de">/de/</option>
     <option value="en">/en/</option>
@@ -265,10 +276,11 @@
 </div>
 
 <div class="brand">
-  <span>made with ♥ by</span>
+  <span data-i18n="brand_made_with">made with ♥ by</span>
   <a href="https://github.com/LUPZN" target="_blank" rel="noopener"><span class="logo">LUPZN</span></a>
 </div>
 
+<script src="i18n.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

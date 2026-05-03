@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Cardmarket Stock Exporter",
-  "version": "2.1.0",
-  "description": "Cardmarket: Stock & Wantlists als CSV. Bulk-Update Preise/Comments via CSV. Fast Mode (~10x), 8 TCGs, 5 Sprachen. by LUPZN",
+  "name": "__MSG_extName__",
+  "version": "2.2.0",
+  "description": "__MSG_extDescription__",
+  "default_locale": "de",
   "author": "LUPZN",
-  "permissions": ["activeTab", "scripting", "downloads", "tabs"],
+  "permissions": ["activeTab", "scripting", "downloads", "tabs", "storage"],
   "host_permissions": ["https://www.cardmarket.com/*"],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Cardmarket Stock Exporter by LUPZN",
+    "default_title": "__MSG_extTitle__",
     "default_icon": {
       "16": "icons/icon-16.png",
       "48": "icons/icon-48.png",
