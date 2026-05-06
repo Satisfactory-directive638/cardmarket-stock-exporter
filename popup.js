@@ -961,6 +961,9 @@ btnAnalyze.addEventListener('click', async () => {
   // Wenn identisch → user hat nicht editiert → kein Cardmarket-Fetch nötig → drastisch weniger CF-Last
   const hasSkipFetchColumns = headers.includes('_OriginalPrice_EUR') && headers.includes('_OriginalComments');
   const updateCommentsForFilter = updateCommentsEl.checked;
+  // v2.2.1: track silent-skips for diagnostic warning
+  let silentCommentSkips = 0;
+  const silentCommentSkipSamples = [];
   for (const r of rows) {
     const id = r.ArticleID?.trim();
     const newPrice = parsePrice(r.Price_EUR);
@@ -974,8 +977,22 @@ btnAnalyze.addEventListener('click', async () => {
       const priceEdited = Math.abs(newPrice - refPrice) >= 0.005;
       const csvCom = (r.Comments || '').trim();
       const refCom = (r._OriginalComments || '').trim();
-      const commentsEdited = updateCommentsForFilter && csvCom !== refCom;
+      const commentsActuallyDiffer = csvCom !== refCom;
+      const commentsEdited = updateCommentsForFilter && commentsActuallyDiffer;
       userEdited = priceEdited || commentsEdited;
+      // v2.2.1: detect silent-skipped comment-only edits (toggle off = silent loss)
+      if (!updateCommentsForFilter && commentsActuallyDiffer && !priceEdited) {
+        silentCommentSkips++;
+        if (silentCommentSkipSamples.length < 3) {
+          silentCommentSkipSamples.push({
+            articleId: id,
+            name: (r.Name || '').slice(0, 40),
+            expansion: (r.Expansion || '').slice(0, 40),
+            csvCom: csvCom.slice(0, 60),
+            refCom: refCom.slice(0, 60),
+          });
+        }
+      }
     }
 
     // v2.1: Delete-Flag aus delete-Spalte (Y/YES/TRUE/1 = löschen, sonst ignorieren)
@@ -1016,6 +1033,20 @@ btnAnalyze.addEventListener('click', async () => {
     const editedCount = updates.filter(u => u.userEdited).length;
     const skipCount = updates.length - editedCount;
     ulog(`✓ Skip-Fetch aktiv: ${editedCount} Zeilen vom User editiert, ${skipCount} unverändert (werden NICHT von Cardmarket gefetched → keine CF-Last)`, 'ok');
+    // v2.2.1: warn loud if user has comment-edits but toggle is OFF (silent-skip = bug-source)
+    if (silentCommentSkips > 0) {
+      ulog(`⚠ ${silentCommentSkips} Zeilen haben geänderte Comments ABER "Comments mit-updaten"-Toggle ist AUS → diese Edits werden IGNORIERT.`, 'err');
+      ulog(`   → Toggle "Comments mit-updaten" oben aktivieren UND nochmal "CSV analysieren + Preview" klicken, um Comments-Updates anzuwenden.`, 'err');
+      for (const s of silentCommentSkipSamples) {
+        ulog(`   • ${s.articleId} (${s.expansion}): "${s.refCom}" → "${s.csvCom}"`, 'err');
+      }
+      // Surface warning banner in preview area
+      const warnEl = document.createElement('div');
+      warnEl.className = 'warn';
+      warnEl.style.cssText = 'background:#7c2d12;color:#fed7aa;border:2px solid #ea580c';
+      warnEl.innerHTML = `⚠ <b>${silentCommentSkips} Comments-Edits werden gerade IGNORIERT</b> — "Comments mit-updaten"-Toggle ist aus. Toggle aktivieren + nochmal analysieren.`;
+      updatePreviewEl.appendChild(warnEl);
+    }
     if (editedCount === 0) {
       ulog(`ℹ Keine Edits erkannt. Bearbeite Price_EUR oder Comments in CSV. (Falls editiert wurde: prüfe ob _OriginalPrice_EUR / _OriginalComments unverändert geblieben sind)`, 'err');
     }

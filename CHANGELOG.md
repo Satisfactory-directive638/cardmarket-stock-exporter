@@ -6,6 +6,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), version
 
 ---
 
+## [2.2.1] — 2026-05-06
+
+Bug fix release for silent-skip of comment-only edits.
+
+### Fixed
+
+- **Silent-skip of comment-only edits when "Update comments" toggle was OFF.**
+  Reported by LUPZN: extension/expansion sets (e.g. "Black Bolt JP: Ergänzungen", SetCode `x-...`) were exported correctly but appeared to be skipped on import. Root cause: the v2.1 Skip-Fetch optimization treated comment-only edits as "no change" when the "Comments mit-updaten" toggle was off, even if the user had actually edited the Comments column. Affected mostly variant-rich extension sets where users update text annotations more often than prices.
+  Fix: the analyzer now detects when `Comments` differs from `_OriginalComments` even with the toggle off, counts those rows, and surfaces a loud red warning in the preview area listing affected articles. The user must now either enable the toggle or accept that comment edits will be ignored.
+
+### Improved
+
+- Diagnostic logs now show up to 3 sample silent-skip cases with article ID, expansion, old comment, new comment for quick verification.
+
+---
+
 ## [2.2.0] — 2026-05-03
 
 i18n release — UI now supports German + English with auto-detection from browser locale plus manual override toggle.
