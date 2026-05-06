@@ -1489,6 +1489,50 @@ btnAnalyze.addEventListener('click', async () => {
     }
   }
 
+  // v2.2.2: Per-Expansion status-breakdown — surfaces patterns like "Ergänzungen alle not-found"
+  const expStats = {};
+  for (const u of [...preview, ...updates.filter(uu => uu.status === 'unchanged (skip-fetch)')]) {
+    if (!u._expansion) {
+      const r = rows.find(rr => rr.ArticleID?.trim() === u.articleId);
+      u._expansion = r?.Expansion || '(unbekannt)';
+    }
+    const exp = u._expansion;
+    const bucket = (u.status || '').startsWith('ok') ? 'ok'
+                : (u.status === 'not found') ? 'not_found'
+                : (u.status || '').startsWith('cap') ? 'capped'
+                : (u.status || '').startsWith('DELETE') ? 'delete'
+                : (u.status || '').startsWith('unchanged') ? 'unchanged'
+                : 'other';
+    if (!expStats[exp]) expStats[exp] = { ok: 0, not_found: 0, capped: 0, delete: 0, unchanged: 0, other: 0 };
+    expStats[exp][bucket]++;
+  }
+  // Surface only expansions with >0 not_found OR all-not_found patterns
+  const flaggedExps = Object.entries(expStats)
+    .filter(([_, s]) => s.not_found > 0)
+    .sort((a, b) => b[1].not_found - a[1].not_found);
+  if (flaggedExps.length > 0) {
+    ulog(`📊 Per-Set Status-Breakdown (Sets mit not-found rows):`, 'err');
+    for (const [exp, s] of flaggedExps.slice(0, 15)) {
+      const total = s.ok + s.not_found + s.capped + s.delete + s.unchanged + s.other;
+      const allNotFound = s.not_found === total;
+      const badge = allNotFound ? ' ⚠ ALLE rows not-found' : '';
+      ulog(`   • ${exp}: ${s.ok} ok, ${s.not_found} not-found, ${s.unchanged} unchanged, ${s.capped} capped${badge}`, 'err');
+    }
+    // If a whole expansion has 100% not-found AND name contains "Erg" (Ergänzungen) or starts with x — log diagnostic
+    const extPatterns = flaggedExps.filter(([exp, s]) => {
+      const total = s.ok + s.not_found + s.capped + s.delete + s.unchanged + s.other;
+      return s.not_found === total && /erg[äa]nzung|ergänz|extension/i.test(exp);
+    });
+    if (extPatterns.length > 0) {
+      ulog(`🔍 Diagnostic: ${extPatterns.length} Erweiterungs-Set(s) komplett not-found. Sample articleIDs zur DevTools-Trace:`, 'err');
+      const sampleNotFound = notFoundFinal.filter(u => extPatterns.some(([exp, _]) => u._expansion === exp)).slice(0, 3);
+      for (const u of sampleNotFound) {
+        ulog(`   articleId=${u.articleId} idProduct=${u.idProduct || '(leer)'} lang="${u.language}" cond="${u.condition}" exp="${u._expansion}"`, 'err');
+      }
+      ulog(`   → Bitte einen dieser articleIds auf Cardmarket öffnen, edit-pencil klicken, in DevTools Network-Tab schauen welche URL die Modal-Form lädt. Schick die URL für v2.2.3-fix.`, 'err');
+    }
+  }
+
   // Render preview
   // v2.1: ok-Status oder DELETE → wird in Apply-Phase verarbeitet
   const isOkStatus = (s) => typeof s === 'string' && (s.startsWith('ok') || s.startsWith('DELETE'));

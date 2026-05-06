@@ -6,19 +6,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), version
 
 ---
 
+## [2.2.2] — 2026-05-06
+
+Diagnostic release for extension-set bulk-update issue.
+
+### Investigation
+
+User-reported (LUPZN, follow-up): comment edits on extension/expansion sets (e.g. "Black Bolt JP: Ergänzungen", SetCode `x-...`) are silently skipped during bulk-update **even when the "Comments mit-updaten" toggle is ON** — regular sets get their comments updated correctly in the same run. The v2.2.1 silent-skip-warning fix did not address this case. Suspected root cause: the `/Modal/Article_EditArticleModal?idArticle=X` endpoint may return no edit-form for extension-article IDs → fetch returns null → status "not found" → row not applied. Cannot confirm without a DevTools network trace.
+
+### Added — Diagnostics
+
+- **Per-Expansion status breakdown** after analyze. Lists every expansion with a row count breakdown: ok / not-found / unchanged / capped. Surfaces patterns like "expansion X has 100% not-found" immediately.
+- **Extension-set auto-detection** — expansions matching `/erg[äa]nzung|extension/i` with 100% not-found rows trigger a special diagnostic block requesting a DevTools network trace of the modal-load URL.
+- **Sample articleIDs** for problematic expansions: prints first 3 `articleId / idProduct / language / condition / expansion` tuples for direct DevTools inspection.
+
+---
+
 ## [2.2.1] — 2026-05-06
 
-Bug fix release for silent-skip of comment-only edits.
+Defensive fix for users who forget the "Update comments" toggle.
 
 ### Fixed
 
-- **Silent-skip of comment-only edits when "Update comments" toggle was OFF.**
-  Reported by LUPZN: extension/expansion sets (e.g. "Black Bolt JP: Ergänzungen", SetCode `x-...`) were exported correctly but appeared to be skipped on import. Root cause: the v2.1 Skip-Fetch optimization treated comment-only edits as "no change" when the "Comments mit-updaten" toggle was off, even if the user had actually edited the Comments column. Affected mostly variant-rich extension sets where users update text annotations more often than prices.
-  Fix: the analyzer now detects when `Comments` differs from `_OriginalComments` even with the toggle off, counts those rows, and surfaces a loud red warning in the preview area listing affected articles. The user must now either enable the toggle or accept that comment edits will be ignored.
-
-### Improved
-
+- **Silent-skip of comment-only edits when "Update comments" toggle was OFF.** Pre-existing bug surfaced by LUPZN's investigation: the v2.1 Skip-Fetch optimization treated comment-only edits as "no change" when the toggle was off, even if the user had actually edited the Comments column. Now the analyzer detects when `Comments` differs from `_OriginalComments` even with the toggle off, counts those rows, and surfaces a loud red warning in the preview area listing affected articles. The user must now either enable the toggle or explicitly accept that comment edits will be ignored.
 - Diagnostic logs now show up to 3 sample silent-skip cases with article ID, expansion, old comment, new comment for quick verification.
+
+> Note: this fix is **defensive** — it does NOT address the toggle-ON extension-set bug. See v2.2.2 for that investigation.
 
 ---
 
